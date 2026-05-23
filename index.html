@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Orifice Flow Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="calculator" aria-labelledby="app-title">
+        <header class="masthead">
+          <img class="app-logo" src="assets/steves-orifice-calculator.png" alt="Steve's Orifice Calculator logo">
+          <div class="title-block">
+            <p class="eyebrow">Differential Pressure Flow</p>
+            <h1 id="app-title">Orifice Plate Calculator</h1>
+          </div>
+          <div class="mode-toggle" role="group" aria-label="Fluid type">
+            <button class="mode-button active" type="button" data-mode="liquid">Liquid</button>
+            <button class="mode-button" type="button" data-mode="gas">Gas</button>
+          </div>
+        </header>
+
+        <section id="startPage" class="start-page">
+          <h2>Choose Calculation</h2>
+          <div class="start-choice" role="group" aria-label="Calculation type">
+            <button class="start-button" type="button" data-calculation-type="flow">Flowrate</button>
+            <button class="start-button" type="button" data-calculation-type="pressure">Differential Pressure</button>
+            <button class="start-button" type="button" data-calculation-type="bore">Bore Diameter</button>
+          </div>
+        </section>
+
+        <nav class="view-toggle hidden" aria-label="App view">
+          <button class="view-button active" type="button" data-view="calculator">Calculator</button>
+          <button class="view-button" type="button" data-view="settings">Settings</button>
+        </nav>
+
+        <form id="flow-form" class="input-grid page-view hidden" data-page="calculator">
+          <input id="calculationType" type="hidden" value="flow">
+
+          <fieldset>
+            <legend>Geometry</legend>
+            <label>
+              Pipe input
+              <select id="pipeInputMode">
+                <option value="manual">Manual inside diameter</option>
+                <option value="ansi" selected>ANSI/ASME pipe size</option>
+              </select>
+            </label>
+            <label class="standard-pipe-input hidden">
+              Nominal pipe size
+              <select id="nominalPipeSize"></select>
+            </label>
+            <label class="standard-pipe-input hidden">
+              Pipe schedule
+              <select id="pipeSchedule"></select>
+            </label>
+            <label>
+              Pipe inside diameter
+              <span class="input-row">
+                <input id="pipeDiameter" type="number" min="0" step="any" value="4" required>
+                <select id="pipeDiameterUnit">
+                  <option value="in">in</option>
+                  <option value="mm">mm</option>
+                  <option value="m">m</option>
+                  <option value="ft">ft</option>
+                </select>
+              </span>
+            </label>
+            <label class="known-bore-input">
+              Orifice input
+              <select id="orificeInputMode">
+                <option value="diameter">Bore diameter</option>
+                <option value="beta">Beta ratio</option>
+              </select>
+            </label>
+            <label class="orifice-diameter-input known-bore-input">
+              Orifice bore diameter
+              <span class="input-row">
+                <input id="orificeDiameter" type="number" min="0" step="any" value="2" required>
+                <select id="orificeDiameterUnit">
+                  <option value="in">in</option>
+                  <option value="mm">mm</option>
+                  <option value="m">m</option>
+                  <option value="ft">ft</option>
+                </select>
+              </span>
+            </label>
+            <label class="beta-input known-bore-input hidden">
+              Beta ratio
+              <input id="betaRatioInput" type="number" min="0" max="1" step="0.001" value="0.5" required>
+            </label>
+            <label class="gas-only hidden">
+              Cd source
+              <select id="gasDischargeCoefficientSource">
+                <option value="aga3Flange">AGA3 flange taps</option>
+                <option value="manual">Manual</option>
+              </select>
+            </label>
+            <label class="manual-discharge-coefficient-input">
+              Manual Cd
+              <input id="dischargeCoefficient" type="number" min="0.1" max="1" step="0.001" value="0.61" required>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Process</legend>
+            <label class="known-pressure-input">
+              Differential pressure
+              <span class="input-row">
+                <input id="deltaPressure" type="number" min="0" step="any" value="100" required>
+                <select id="deltaPressureUnit">
+                  <option value="inH2O">in H2O</option>
+                  <option value="Pa">Pa</option>
+                  <option value="kPa">kPa</option>
+                  <option value="bar">bar</option>
+                  <option value="psi">psi</option>
+                </select>
+              </span>
+            </label>
+            <label class="known-flow-input hidden">
+              Flowrate
+              <span class="input-row">
+                <input id="knownFlow" type="number" min="0" step="any" value="100" required>
+                <select id="knownFlowUnit">
+                  <option value="gpm">gpm</option>
+                  <option value="m3h">m3/h</option>
+                  <option value="m3s">m3/s</option>
+                  <option value="ft3s">ft3/sec</option>
+                  <option value="cfm">ft3/min</option>
+                  <option value="ft3h">ft3/hr</option>
+                  <option value="scfh">SCFH</option>
+                  <option value="scfm">SCFM</option>
+                  <option value="mscfd">MSCFD</option>
+                  <option value="kgps">kg/s</option>
+                  <option value="lbhr">lb/hr</option>
+                </select>
+              </span>
+            </label>
+            <label class="liquid-only">
+              Liquid density source
+              <select id="liquidDensitySource">
+                <option value="water">Water from temperature</option>
+                <option value="manual">Manual density</option>
+              </select>
+            </label>
+            <label class="liquid-only water-density-input">
+              Water temperature
+              <span class="input-row">
+                <input id="waterTemperature" type="number" step="any" value="60" required>
+                <select id="waterTemperatureUnit">
+                  <option value="F">deg F</option>
+                  <option value="C">deg C</option>
+                </select>
+              </span>
+            </label>
+            <label class="manual-density-input gas-only hidden">
+              Fluid density
+              <span class="input-row">
+                <input id="density" type="number" min="0" step="any" value="62.4" required>
+                <select id="densityUnit">
+                  <option value="lbft3">lb/ft3</option>
+                  <option value="kgm3">kg/m3</option>
+                </select>
+              </span>
+            </label>
+            <label class="gas-only hidden">
+              Gas density source
+              <select id="gasDensitySource">
+                <option value="naturalGas">Natural gas from P, T, SG</option>
+                <option value="manual">Manual density</option>
+              </select>
+            </label>
+            <label class="gas-only hidden">
+              Upstream pressure
+              <span class="input-row">
+                <input id="upstreamPressure" type="number" min="0" step="any" value="100" required>
+                <select id="upstreamPressureUnit">
+                  <option value="psia">psia</option>
+                  <option value="kPaAbs">kPa abs</option>
+                  <option value="barAbs">bar abs</option>
+                  <option value="Pa">Pa abs</option>
+                </select>
+              </span>
+            </label>
+            <label class="gas-only hidden">
+              Gas temperature
+              <span class="input-row">
+                <input id="gasTemperature" type="number" step="any" value="60" required>
+                <select id="gasTemperatureUnit">
+                  <option value="F">deg F</option>
+                  <option value="C">deg C</option>
+                </select>
+              </span>
+            </label>
+            <label class="gas-only hidden">
+              Specific gravity
+              <input id="gasSpecificGravity" type="number" min="0" step="0.001" value="0.65" required>
+            </label>
+            <label class="gas-only hidden">
+              Specific heat ratio
+              <input id="specificHeatRatio" type="number" min="1" step="0.001" value="1.3" required>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Output</legend>
+            <label>
+              Volume flow units
+              <select id="volumeFlowUnit">
+                <option value="gpm">gpm</option>
+                <option value="m3h">m3/h</option>
+                <option value="m3s">m3/s</option>
+                <option value="ft3s">ft3/sec</option>
+                <option value="cfm">ft3/min</option>
+                <option value="ft3h">ft3/hr</option>
+                <option value="scfh">SCFH</option>
+                <option value="scfm">SCFM</option>
+                <option value="mscfd">MSCFD</option>
+              </select>
+            </label>
+            <label>
+              Mass flow units
+              <select id="massFlowUnit">
+                <option value="kgps">kg/s</option>
+                <option value="lbhr">lb/hr</option>
+              </select>
+            </label>
+          </fieldset>
+        </form>
+
+        <form id="settings-form" class="settings-grid page-view hidden" data-page="settings">
+          <fieldset>
+            <legend>Preferences</legend>
+            <label>
+              Unit system
+              <select id="unitSystem">
+                <option value="imperial">Imperial</option>
+                <option value="si">SI</option>
+              </select>
+            </label>
+            <label>
+              Decimal places
+              <input id="precision" type="number" min="0" max="6" step="1" value="2">
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Gas Base Conditions</legend>
+            <label>
+              Base pressure
+              <span class="input-row">
+                <input id="basePressure" type="number" min="0" step="any" value="14.7" required>
+                <select id="basePressureUnit">
+                  <option value="psia">psia</option>
+                  <option value="kPaAbs">kPa abs</option>
+                  <option value="barAbs">bar abs</option>
+                  <option value="Pa">Pa abs</option>
+                </select>
+              </span>
+            </label>
+            <label>
+              Base temperature
+              <span class="input-row">
+                <input id="baseTemperature" type="number" step="any" value="60" required>
+                <select id="baseTemperatureUnit">
+                  <option value="F">deg F</option>
+                  <option value="C">deg C</option>
+                </select>
+              </span>
+            </label>
+            <label>
+              Base compressibility
+              <input id="baseCompressibility" type="number" min="0" step="0.0001" value="1" required>
+            </label>
+          </fieldset>
+        </form>
+      </section>
+
+      <aside id="resultsPanel" class="results hidden" aria-live="polite">
+        <div class="result-card primary">
+          <span id="primaryResultLabel" class="label">Calculated flow</span>
+          <strong id="flowValue">-</strong>
+          <span id="flowUnitLabel" class="unit-label">gpm</span>
+        </div>
+        <div class="report-actions">
+          <button id="restartButton" class="report-button secondary" type="button">Restart</button>
+          <button id="printReportButton" class="report-button" type="button">Print Results</button>
+          <button id="downloadTextReportButton" class="report-button secondary" type="button">Save Text File</button>
+        </div>
+
+        <div class="metrics">
+          <div>
+            <span>Beta ratio</span>
+            <strong id="betaValue">-</strong>
+          </div>
+          <div class="gas-only hidden">
+            <span>Cd</span>
+            <strong id="calculatedCdValue">-</strong>
+          </div>
+          <div class="gas-only hidden">
+            <span>Expansion factor</span>
+            <strong id="expansionValue">-</strong>
+          </div>
+          <div>
+            <span>Mass flow</span>
+            <strong id="massFlowValue">-</strong>
+          </div>
+          <div>
+            <span>Pipe velocity</span>
+            <strong id="velocityValue">-</strong>
+          </div>
+          <div>
+            <span>Differential pressure</span>
+            <strong id="calculatedDeltaPressureValue">-</strong>
+          </div>
+          <div>
+            <span>Orifice bore</span>
+            <strong id="calculatedBoreValue">-</strong>
+          </div>
+          <div class="liquid-only">
+            <span>Liquid density</span>
+            <strong id="liquidDensityValue">-</strong>
+          </div>
+          <div class="liquid-only">
+            <span>Water viscosity</span>
+            <strong id="waterViscosityValue">-</strong>
+          </div>
+          <div class="gas-only hidden">
+            <span>Gas density</span>
+            <strong id="gasDensityValue">-</strong>
+          </div>
+          <div class="gas-only hidden">
+            <span>Base density</span>
+            <strong id="baseDensityValue">-</strong>
+          </div>
+          <div class="gas-only hidden">
+            <span>Gas viscosity</span>
+            <strong id="gasViscosityValue">-</strong>
+          </div>
+          <div>
+            <span>Reynolds number</span>
+            <strong id="reynoldsValue">-</strong>
+          </div>
+        </div>
+
+        <section class="notes">
+          <h2>Warnings</h2>
+          <p id="formulaText" class="hidden"></p>
+          <ul id="warnings"></ul>
+        </section>
+      </aside>
+    </main>
+
+    <section id="reportDocument" class="report-document" aria-label="Printable calculation report"></section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
